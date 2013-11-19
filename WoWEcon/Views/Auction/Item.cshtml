@@ -1,0 +1,16 @@
+﻿@model IEnumerable<KeyValuePair<Int64,Int32>>
+
+@{
+    ViewBag.Title = "Item";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div id="crossSectionChart"></div>
+
+@section scripts {
+@Scripts.Render("~\\Scripts\\highcharts.js")
+
+<script  type="text/javascript">
+
+</script>
+}

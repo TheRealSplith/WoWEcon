@@ -1,0 +1,38 @@
+﻿@model WoWEcon.Models.HomeIndexVM
+@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-6">
+      <h1>Current Opportunities</h1> 
+      <p>This is a collection of items where buyouts are never below 2s50c, there are at least 20 items on per
+        period in the last three days. Mean and calculations are done on the 25th percentile of buyout prices.
+        This helps remove extremely high outliers, but does nothing for low outliers.</p>
+      <table class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Current</th>
+            <th>Mean</th>
+            <th>StdDev</th>
+            <th>Z-Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var WoWItem in @Model.Items)
+          {
+            <tr>
+              <td>@WoWItem.ItemName</td>
+              <td>@WoWItem.MinBuyout</td>
+              <td>@WoWItem.Mean</td>
+              <td>@WoWItem.StdDev</td>
+              <td>@WoWItem.ZValue</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
