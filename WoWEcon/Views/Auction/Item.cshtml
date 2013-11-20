@@ -1,16 +1,109 @@
-﻿@model IEnumerable<KeyValuePair<Int64,Int32>>
+﻿@model WoWEcon.Models.AuctionItemVM
 
 @{
     ViewBag.Title = "Item";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div id="crossSectionChart"></div>
+<div class="row">
+  <div class="col-md-8">
+    <h1>@Model.ItemName <small>[@Model.Realm / @Model.Faction]</small></h1>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-8">
+    <div id="crossSectionChart"></div>
+  </div>
+</div>
 
 @section scripts {
 @Scripts.Render("~\\Scripts\\highcharts.js")
 
 <script  type="text/javascript">
+  $(function () {
+    var chart,
+        categories = [
+          @for(int i = 0; i < Model.PriceGroups.Length; ++i)
+          {
+            if(i != Model.PriceGroups.Length -1)
+            {
+             @Html.Raw(
+                String.Format("'{0} - {1}',",
+                  Model.PriceGroups[i].Key.ToString(),
+                  Model.PriceGroups[i+1].Key.ToString()
+                )
+              )
+            }
+            else
+            {
+             @Html.Raw(
+               @String.Format("'{0}+'",
+                 Model.PriceGroups[i].Key.ToString()
+               )
+             )
+            }
+          }
+          @*String.Join(",", Model.PriceGroups.Select(a => a.Key.ToString()).ToList())*@
+        ];
+    $(document).ready(function () {
+      $('#crossSectionChart').highcharts({
+        chart: {
+          type: 'bar'
+        },
+        title: {
+          text: 'Histogram of Price Groups'
+        },
+        subtitle: {
+          text: 'Bill is Awesome'
+        },
+        xAxis: [{
+          categories: categories,
+          reversed: false
+        }, { // mirror axis on right side
+          opposite: true,
+          reversed: false,
+          categories: categories,
+          linkedTo: 0
+        }],
+        yAxis: {
+          title: {
+            text: null
+          },
+          labels: {
+            formatter: function () {
+              return Math.abs(this.value);
+            }
+          },
+          min: @Model.PriceGroups.Select(z => z.Value*-1).Min() 
+            ,
+          max: @Model.PriceGroups.Select(z => z.Value).Max()
+        },
 
+        plotOptions: {
+          series: {
+            stacking: 'normal'
+          }
+        },
+
+        tooltip: {
+          formatter: function () {
+            return '<b>' + this.series.name + ', Price Range ' + this.point.category + '</b><br/>' +
+                'Count: ' + Highcharts.numberFormat(Math.abs(this.point.y), 0);
+          }
+        },
+
+        series: [
+          {
+            name: 'Horde',
+            color: "Red",
+            data: [
+              @String.Join(",", Model.PriceGroups.Select(a => a.Value.ToString()).ToList())
+            ]
+          }
+        ]
+      });
+    });
+
+  });
 </script>
 }

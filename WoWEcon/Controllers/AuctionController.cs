@@ -15,9 +15,15 @@ namespace WoWEcon.Controllers
 
         public ActionResult Item(String realm, String faction, Int32 id, Int32 numPriceCat = 10)
         {
+            AuctionItemVM vm = new AuctionItemVM();
+
             var item = wac.Items.Find(id);
             if (item == null)
                 return new HttpNotFoundResult("No Items found!");
+
+            vm.ItemName = item.Name;
+            vm.Faction = faction;
+            vm.Realm = realm;
 
             // we get the most recent time so that we can get a cross-section of
             // the most recent scan
@@ -46,17 +52,21 @@ namespace WoWEcon.Controllers
             }
 
             // Category structure
-            KeyValuePair<Int64, Int32>[] histoData = new KeyValuePair<long, int>[numberOfCats];
+            vm.PriceGroups = new KeyValuePair<long, int>[numberOfCats];
             // here we get the number of items in certain price ranges to get a
             // histogram of a pricing cross-section
-            for (int i = 0; i < histoData.Length; ++i )
+            for (int i = 0; i < vm.PriceGroups.Length; ++i )
             {
-                if(i != histoData.Length)
+                if(i != vm.PriceGroups.Length -1)
                 {
-                    histoData[i] = new KeyValuePair<long, int>(
+                    vm.PriceGroups[i] = new KeyValuePair<long, int>(
                         // the bottom price for the histogram category
                         bottom + (i * diff),
-                        currentItems
+                        (from a in currentItems
+                         where a.Buyout >= bottom + (i * diff)
+                            && a.Buyout < bottom + ((i + 1) * diff)
+                         select (int?)a.Quanity).Sum() ?? 0
+                        /*currentItems
                             .Where(
                             // bottom condition
                             a => a.Buyout >= bottom + (i * diff) 
@@ -64,20 +74,21 @@ namespace WoWEcon.Controllers
                          && a.Buyout < bottom + ((i + 1) * diff))
                             // this is what we are here for, the number of items in the range
                             .Sum(a => a.Quanity)
+                         */
                     );
                 }
                 else
                 {
-                    histoData[i] = new KeyValuePair<long,int>(
+                    vm.PriceGroups[i] = new KeyValuePair<long,int>(
                         // the bottom price for category
                         bottom + (i * diff),
                         // number of items in range
-                        currentItems.Where(a => a.Buyout >= bottom + (i * diff)).Sum(a => a.Quanity)
+                        currentItems.Where(a => a.Buyout >= bottom + (i * diff)).Sum(a => (int?)a.Quanity) ?? 0
                     );
                 }
             }
 
-            return View(histoData);
+            return View(vm);
         }
 
     }
