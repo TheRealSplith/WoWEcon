@@ -39,7 +39,7 @@ namespace WoWEcon.Controllers
                     AuctionSummary ret = new AuctionSummary();
                     ret.ItemID = itemAuctions.Key.ID;
                     ret.ItemName = itemAuctions.First().MyItem.Name;
-                    ret.MinBuyout = itemAuctions.Where(a => a.TimeStamp == itemAuctions.Select(auc => auc.TimeStamp).Max()).Min(a => a.Buyout);
+                    ret.MinBuyout = itemAuctions.Where(a => a.TimeStamp == itemAuctions.Select(auc => auc.TimeStamp).Max()).Min(a => a.Buyout / a.Quanity);
                     var accountCompare = new GenericEqualityComparer<Auction>(
                         (Auction x, Auction y) => x.AucID == y.AucID,
                         (Auction x) => x.GetHashCode()
@@ -47,20 +47,25 @@ namespace WoWEcon.Controllers
                     var auctions = itemAuctions.Distinct(accountCompare);
                     var bigCount = auctions.Count();
                     auctions = auctions.OrderBy(a => a.Buyout).Take((int)Math.Ceiling(bigCount * .25));
-                    var buyouts = auctions.Select(a => a.Buyout * 1.0);
+
+                    var buyouts = auctions.SelectMany(a =>
+                        {
+                            return Enumerable.Range(0, a.Quanity).Select(v => a.Buyout / a.Quanity * 1.0);
+                        }
+                    );
 
                     ret.StdDev = Math.Round(Extensions.StdDev(buyouts), 4);
                     // If there is no variance, there is no volatility
                     if (ret.StdDev != 0.0)
                     {
-                        ret.Mean = Math.Round(buyouts.Average(), 4);
+                        ret.Mean = Math.Round(buyouts.Average() , 4);
                         ret.ZValue = Math.Round((ret.MinBuyout - ret.Mean) / ret.StdDev, 4);
                         bag.Add(ret);
                     }
                 }
             );
 
-            var vmIndex = new HomeIndexVM();
+            var vmIndex = new HomeIndexVM() { Faction = faction, Realm = realm };
             vmIndex.Items = bag.OrderBy(a => a.ZValue).Take(count).ToList();
 
             return View(vmIndex);

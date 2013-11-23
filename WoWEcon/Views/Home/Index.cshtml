@@ -24,7 +24,12 @@
           @foreach (var WoWItem in @Model.Items)
           {
             <tr>
-              <td>@WoWItem.ItemName</td>
+              <td>@Html.ActionLink(@WoWItem.ItemName, "Item", "Auction", 
+                new { 
+                  id = @WoWItem.ItemID, 
+                  realm = Model.Realm, 
+                  faction = Model.Faction  
+                } ,null) </td>
               <td>@WoWItem.MinBuyout</td>
               <td>@WoWItem.Mean</td>
               <td>@WoWItem.StdDev</td>

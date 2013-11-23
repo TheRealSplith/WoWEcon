@@ -13,7 +13,7 @@ namespace WoWEcon.Controllers
         //
         // GET: /Auction/
 
-        public ActionResult Item(String realm, String faction, Int32 id, Int32 numPriceCat = 10)
+        public ActionResult Item(Int32 id, String faction = "horde", String realm = "bonechewer", Int32 numPriceCat = 10)
         {
             AuctionItemVM vm = new AuctionItemVM();
 
@@ -28,12 +28,16 @@ namespace WoWEcon.Controllers
             // we get the most recent time so that we can get a cross-section of
             // the most recent scan
             DateTime startDate = wac.Auctions.Select(a => a.TimeStamp).Max();
-            var currentItems = from auc in wac.Auctions
+            var currentItems = (from auc in wac.Auctions
                                where auc.MyAuctionHouse.Realm == realm
                                     && auc.MyAuctionHouse.Faction == faction
                                     && auc.ItemID == id
                                     && auc.TimeStamp == startDate
-                               select auc;
+                               select auc).ToList();
+
+            // If we don't have items we need to throw a tantrume
+            if (currentItems.Count() == 0)
+                return new HttpNotFoundResult("No records found");
 
             Int32 uniquePrices = currentItems.Select(a => a.Buyout).Distinct().Count();
             // Note Cats refers to categories
@@ -41,8 +45,8 @@ namespace WoWEcon.Controllers
             Int64[] catPriceBreakdown = new Int64[numberOfCats];
 
             // Used to calculate our category ranges
-            var bottom = currentItems.Select(a => a.Buyout).Min();
-            var top = currentItems.Select(a => a.Buyout).Max();
+            var bottom = currentItems.Select(a => a.Buyout / a.Quanity).Min();
+            var top = currentItems.Select(a => a.Buyout / a.Quanity).Max();
             var diff = (top - bottom) / numberOfCats;
 
             // Actual category range calculation
@@ -63,8 +67,8 @@ namespace WoWEcon.Controllers
                         // the bottom price for the histogram category
                         bottom + (i * diff),
                         (from a in currentItems
-                         where a.Buyout >= bottom + (i * diff)
-                            && a.Buyout < bottom + ((i + 1) * diff)
+                         where (a.Buyout / a.Quanity) >= bottom + (i * diff)
+                            && (a.Buyout / a.Quanity) < bottom + ((i + 1) * diff)
                          select (int?)a.Quanity).Sum() ?? 0
                         /*currentItems
                             .Where(

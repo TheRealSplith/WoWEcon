@@ -7,8 +7,8 @@ namespace WoWEcon.Models
 {
     public class HomeIndexVM
     {
-        public String Hero;
-        public String Message;
+        public String Faction;
+        public String Realm;
         public IList<AuctionSummary> Items = new List<AuctionSummary>();
     }
 
