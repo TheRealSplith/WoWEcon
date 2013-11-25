@@ -110,8 +110,10 @@ namespace WoWEcon.Controllers
                 }
             }
 
+            ViewData[faction] = faction;
+            ViewData[realm] = realm;
+
             return View(vm);
         }
-
     }
 }

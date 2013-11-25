@@ -4,3 +4,12 @@ body {
   padding-top: 50px;
   font-size: 14px;
 }
+
+.ui-autocomplete {
+  background-color: white;
+}
+
+.ui-menu-item {
+  color: black;
+  font-size: 14px;
+}

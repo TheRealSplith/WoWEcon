@@ -68,6 +68,9 @@ namespace WoWEcon.Controllers
             var vmIndex = new HomeIndexVM() { Faction = faction, Realm = realm };
             vmIndex.Items = bag.OrderBy(a => a.ZValue).Take(results).ToList();
 
+            ViewData["faction"] = faction;
+            ViewData["realm"] = realm;
+
             return View(vmIndex);
         }
     }
