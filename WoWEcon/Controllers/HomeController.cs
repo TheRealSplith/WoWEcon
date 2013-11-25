@@ -14,7 +14,7 @@ namespace WoWEcon.Controllers
         WoWAuctionContext wac = new WoWAuctionContext();
 
         [OutputCache(Duration=60 * 60, VaryByParam="*", Location=System.Web.UI.OutputCacheLocation.Server)]
-        public ActionResult Index(String faction = "horde", String realm = "bonechewer", Int32 count = 20, Int32 buymin = 250)
+        public ActionResult Index(String faction = "horde", String realm = "bonechewer", Int32 count = 20, Int32 results = 25, Int32 buymin = 250)
         {
             var StartDate = DateTime.Today.Subtract(new TimeSpan(3, 0, 0, 0));
 
@@ -34,7 +34,7 @@ namespace WoWEcon.Controllers
 
             List<AuctionSummary> items = new List<AuctionSummary>();
             ConcurrentBag<AuctionSummary> bag = new ConcurrentBag<AuctionSummary>();
-            Parallel.ForEach(ByItems, new ParallelOptions { MaxDegreeOfParallelism = 1 }, (itemAuctions) =>
+            Parallel.ForEach(ByItems, new ParallelOptions { MaxDegreeOfParallelism = 8 }, (itemAuctions) =>
                 {
                     AuctionSummary ret = new AuctionSummary();
                     ret.ItemID = itemAuctions.Key.ID;
@@ -66,7 +66,7 @@ namespace WoWEcon.Controllers
             );
 
             var vmIndex = new HomeIndexVM() { Faction = faction, Realm = realm };
-            vmIndex.Items = bag.OrderBy(a => a.ZValue).Take(count).ToList();
+            vmIndex.Items = bag.OrderBy(a => a.ZValue).Take(results).ToList();
 
             return View(vmIndex);
         }

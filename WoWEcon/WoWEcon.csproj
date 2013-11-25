@@ -190,6 +190,7 @@
     </Compile>
     <Compile Include="Models\AccountModels.cs" />
     <Compile Include="Models\AuctionItemVM.cs" />
+    <Compile Include="Models\BusinessObjects.cs" />
     <Compile Include="Models\GenericEqualityComparer.cs" />
     <Compile Include="Models\AuctionModels.cs" />
     <Compile Include="Models\Extensions.cs" />

@@ -23,14 +23,15 @@
   $(function () {
     var chart,
         categories = [
-          @for(int i = 0; i < Model.PriceGroups.Length; ++i)
+          @{ Int64[] categories = Model.Data.Categories; }
+          @for(int i = 0; i < categories.Length; ++i)
           {
-            if(i != Model.PriceGroups.Length -1)
+            if(i != categories.Length -1)
             {
              @Html.Raw(
                 String.Format("'{0} - {1}',",
-                  Model.PriceGroups[i].Key.ToString(),
-                  Model.PriceGroups[i+1].Key.ToString()
+                  categories[i].ToString(),
+                  categories[i+1].ToString()
                 )
               )
             }
@@ -38,12 +39,12 @@
             {
              @Html.Raw(
                @String.Format("'{0}+'",
-                 Model.PriceGroups[i].Key.ToString()
+                 categories[i].ToString()
                )
              )
             }
           }
-          @*String.Join(",", Model.PriceGroups.Select(a => a.Key.ToString()).ToList())*@
+          @*String.Join(",", Model.PriceGroups.Select(a => a.ToString()).ToList())*@
         ];
     $(document).ready(function () {
       $('#crossSectionChart').highcharts({
@@ -74,9 +75,9 @@
               return Math.abs(this.value);
             }
           },
-          min: @Model.PriceGroups.Select(z => z.Value*-1).Min() 
+          min: @Model.Data.Off.Select(z => z.Value*-1).Min() 
             ,
-          max: @Model.PriceGroups.Select(z => z.Value).Max()
+          max: @Model.Data.Primary.Select(z => z.Value).Max()
         },
 
         plotOptions: {
@@ -94,10 +95,17 @@
 
         series: [
           {
-            name: 'Horde',
-            color: "Red",
+            name: "@Model.Data.PrimaryName",
+            color: "@Model.Data.PrimaryColor",
             data: [
-              @String.Join(",", Model.PriceGroups.Select(a => a.Value.ToString()).ToList())
+              @String.Join(",", Model.Data.Primary.Select(a => a.Value.ToString()).ToList())
+            ]
+          },
+          {
+            name: "@Model.Data.OffName",
+            color: "@Model.Data.OffColor",
+            data: [
+              @String.Join(",", Model.Data.Off.Select(a => (a.Value * -1).ToString()).ToList())
             ]
           }
         ]
