@@ -14,26 +14,24 @@ namespace WoWEcon
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
             routes.MapRoute(
-                name: "realm",
+                name: "qualified",
                 url: "{realm}/{faction}/{controller}/{action}/{id}",
                 defaults: new
                 {
                     id = UrlParameter.Optional,
                     realm = UrlParameter.Optional,
                     faction = UrlParameter.Optional
-                },
-                namespaces: new String[] { "WoWEcon.Controllers" }
-            );
-            routes.MapRoute(
-                name: "api",
-                url: "api/{controller}/{action}",
-                namespaces: new String[] { "WoWEcon.Controllers.Api" }
+                }
             );
             routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
-                defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional },
-                namespaces: new String[] { "WoWEcon.Controllers"}
+                defaults: new 
+                { 
+                    controller = "Home", 
+                    action = "Index", 
+                    id = UrlParameter.Optional 
+                }
             );
 
         }

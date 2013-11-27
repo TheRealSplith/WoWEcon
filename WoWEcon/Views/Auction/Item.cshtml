@@ -15,6 +15,11 @@
     <div id="crossSectionChart"></div>
   </div>
 </div>
+<div class="row">
+  <div class="col-md-8">
+    <div id="historicalChart"
+  </div>
+</div>
 
 @section scripts {
 @Scripts.Render("~\\Scripts\\highcharts.js")
@@ -112,6 +117,59 @@
       });
     });
 
+  });
+</script>
+<script type="text/javascript">
+  $(function () {
+    $('#historicalChart').highcharts({
+      chart: {
+        type: 'line'
+      },
+      title: {
+        text: 'Historical Prices for @HttpUtility.JavaScriptStringEncode(Model.ItemName)'
+      },
+      subtitle: {
+        text: 'Data taken infrequently, market based on 15th percentile'
+      },
+      xAxis: {
+        type: 'datetime',
+        dateTimeLabelFormats: { // don't display the dummy year
+          month: '%e. %b',
+          year: '%b'
+        }
+      },
+      yAxis: {
+        labels: {
+          formatter: function() {
+            return this.value / 10000 + 'g';
+          }
+        },
+        title: {
+          text: 'price'
+        },
+        min: 0
+      },
+      tooltip: {
+        formatter: function() {
+          return '<b>'+ this.series.name +'</b><br/>'+
+          Highcharts.dateFormat('%e. %b', this.x) +': '+ this.y / 10000 +' g';
+        }
+      },
+            
+      series: [{
+        name: 'Min Price',
+        color: 'red',
+        data: [
+          @Html.Raw(Model.MinData())
+        ]
+      }, {
+        name: 'Market Price',
+        color: 'blue',
+        data: [
+          @Html.Raw(Model.MarketData())
+        ]
+      }]
+    });
   });
 </script>
 }

@@ -18,48 +18,41 @@ namespace WoWEcon.Controllers
         {
             var StartDate = DateTime.Today.Subtract(new TimeSpan(3, 0, 0, 0));
 
+            // EqulityComparer for Item
+            var itemComparer = new GenericEqualityComparer<Item>(
+                (a, b) => a.ID == b.ID,
+                (a) => a.GetHashCode()
+            );
             // Get a set of Item:IE<Auction>
-            var ByItems = wac.Auctions
-                        .Where(aucCheck => aucCheck.TimeStamp >= StartDate
-                            // Get the right AH
-                            && aucCheck.MyAuctionHouse.Faction == faction
-                            && aucCheck.MyAuctionHouse.Realm == realm)
-                        // Teh grouping
-                        .GroupBy(itemGroup => itemGroup.MyItem)
-                        // Sum of all Quantity / Number of times we got data = Average listing quantity
-                        .Where(itemAucs => 
-                            itemAucs.Sum(a => a.Quanity) 
-                            / itemAucs.Select(a => a.TimeStamp).Distinct().Count() > count)
-                        .Where(buyoutFloor => buyoutFloor.Select(a => a.Buyout).Min() > buymin);
+            var items = (from a in wac.Auctions
+                           where a.MyAuctionHouse.Realm == realm
+                              && a.MyAuctionHouse.Faction == faction
+                              && a.TimeStamp >= StartDate
+                              && a.TimeStamp <= DateTime.Now
+                              && a.Buyout > 0
+                           select a.MyItem).ToList();
 
-            List<AuctionSummary> items = new List<AuctionSummary>();
+            items = items.Distinct(itemComparer).ToList();
+
+            // result collection
             ConcurrentBag<AuctionSummary> bag = new ConcurrentBag<AuctionSummary>();
-            Parallel.ForEach(ByItems, new ParallelOptions { MaxDegreeOfParallelism = 8 }, (itemAuctions) =>
+            Parallel.ForEach(items, new ParallelOptions { MaxDegreeOfParallelism = 8 }, (itemAuctions) =>
                 {
                     AuctionSummary ret = new AuctionSummary();
-                    ret.ItemID = itemAuctions.Key.ID;
-                    ret.ItemName = itemAuctions.First().MyItem.Name;
-                    ret.MinBuyout = itemAuctions.Where(a => a.TimeStamp == itemAuctions.Select(auc => auc.TimeStamp).Max()).Min(a => a.Buyout / a.Quanity);
-                    var accountCompare = new GenericEqualityComparer<Auction>(
-                        (Auction x, Auction y) => x.AucID == y.AucID,
-                        (Auction x) => x.GetHashCode()
-                    );
-                    var auctions = itemAuctions.Distinct(accountCompare);
-                    var bigCount = auctions.Count();
-                    auctions = auctions.OrderBy(a => a.Buyout).Take((int)Math.Ceiling(bigCount * .25));
+                    AuctionAPIController api = new AuctionAPIController();
 
-                    var buyouts = auctions.SelectMany(a =>
-                        {
-                            return Enumerable.Range(0, a.Quanity).Select(v => a.Buyout / a.Quanity * 1.0);
-                        }
-                    );
+                    var result = api.SingleZStats(realm, faction, itemAuctions.ID, StartDate, DateTime.Now, .15, 250);
 
-                    ret.StdDev = Math.Round(Extensions.StdDev(buyouts), 4);
                     // If there is no variance, there is no volatility
-                    if (ret.StdDev != 0.0)
+                    if (result.StdDev != 0.0 && result.AvgSeen >= count)
                     {
-                        ret.Mean = Math.Round(buyouts.Average() , 4);
-                        ret.ZValue = Math.Round((ret.MinBuyout - ret.Mean) / ret.StdDev, 4);
+                        ret.ItemID = itemAuctions.ID;
+                        ret.ItemName = itemAuctions.Name;
+                        ret.Mean = Math.Round(result.Mean, 4);
+                        ret.MinBuyout = result.CurrMin;
+                        ret.StdDev = Math.Round(result.StdDev, 4);
+                        ret.ZValue = Math.Round(result.ZValue, 4);
+
                         bag.Add(ret);
                     }
                 }

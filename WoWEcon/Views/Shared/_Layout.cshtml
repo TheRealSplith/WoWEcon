@@ -73,7 +73,8 @@
     $('#search').autocomplete({ 
       source: function(request, response) {
         $.ajax({
-          url: @Html.Raw(String.Format("'{0}'",@Url.Action("AutoComplete", "AuctionAPI"))),
+          url: @Html.Raw(String.Format("'{0}'",@Url.HttpRouteUrl("DefaultApi", new { Controller = "AuctionAPI" }))),
+          @*url: @Html.Raw(String.Format("'{0}'",@Url.Action("AutoComplete", "AuctionAPI"))),*@
           data: { query: request.term },
         dataType: 'json',
         type: 'GET',

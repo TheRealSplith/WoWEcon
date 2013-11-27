@@ -15,6 +15,7 @@ namespace WoWEcon.Controllers
 
         public ActionResult Item(Int32 id, String faction = "horde", String realm = "bonechewer", Int32 numPriceCat = 10)
         {
+            AuctionAPIController api = new AuctionAPIController();
             String offFaction = faction == "horde" ? "alliance" : "horde";
 
             AuctionItemVM vm = new AuctionItemVM();
@@ -110,8 +111,11 @@ namespace WoWEcon.Controllers
                 }
             }
 
-            ViewData[faction] = faction;
-            ViewData[realm] = realm;
+            DateTime historicalStart = DateTime.Today.Subtract(new TimeSpan(30,0,0,0,0));
+            vm.HistoryData = api.HistoricalData(realm, faction, id, historicalStart, DateTime.Now);
+
+            ViewData["faction"] = faction;
+            ViewData["realm"] = realm;
 
             return View(vm);
         }
