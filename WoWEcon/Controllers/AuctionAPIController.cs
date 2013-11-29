@@ -89,7 +89,7 @@ namespace WoWEcon.Controllers
                 hr.Count = iTimeStamp.Count();
                 var buyouts = iTimeStamp.SelectMany(a =>
                     {
-                        return Enumerable.Range(0, a.Quanity).Select(b => a.Buyout);
+                        return Enumerable.Range(0, a.Quanity).Select(b => a.Buyout / a.Quanity);
                     }
                 );
                 var culledAuctions = buyouts.OrderBy(buy => buy).Take((int)Math.Ceiling(hr.Count * percentile));

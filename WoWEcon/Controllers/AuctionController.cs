@@ -112,7 +112,7 @@ namespace WoWEcon.Controllers
             }
 
             DateTime historicalStart = DateTime.Today.Subtract(new TimeSpan(30,0,0,0,0));
-            vm.HistoryData = api.HistoricalData(realm, faction, id, historicalStart, DateTime.Now);
+            vm.HistoryData = api.HistoricalData(realm, faction, id, historicalStart, DateTime.UtcNow);
 
             ViewData["faction"] = faction;
             ViewData["realm"] = realm;
