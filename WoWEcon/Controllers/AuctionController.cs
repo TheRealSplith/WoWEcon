@@ -44,10 +44,6 @@ namespace WoWEcon.Controllers
                                         && auc.TimeStamp == startDate
                                    select auc).ToList();
 
-            // If we don't have items we need to throw a tantrume
-            if (factionItems.Count() == 0)
-                return new HttpNotFoundResult("No records found");
-
             IEnumerable<long> allBuyoutPrices = factionItems.Union(offFactionItems).Select(a => a.Buyout / a.Quanity).Distinct();
             Int32 uniquePrices = allBuyoutPrices.Count();
             // Note Cats refers to categories

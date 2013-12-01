@@ -24,6 +24,8 @@
 @section scripts {
 @Scripts.Render("~\\Scripts\\highcharts.js")
 
+@if (Model.Data.Primary.Count() != 0)
+{
 <script  type="text/javascript">
   $(function () {
     var chart,
@@ -119,6 +121,15 @@
 
   });
 </script>
+}
+else
+{
+  <script>
+    $(function () {
+      $('#crossSectionChart').text("Failed to find any results for primary faction")
+    });
+  </script>
+}
 <script type="text/javascript">
   $(function () {
     $('#historicalChart').highcharts({

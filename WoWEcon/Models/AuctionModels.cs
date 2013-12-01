@@ -66,5 +66,14 @@ namespace WoWEcon.Models
         [Key]
         public Int32 ID { get; set; }
         public String Name { get; set; }
+        public String Description { get; set; }
+        public Int32 ItemLevel { get; set; }
+        public Int32 Stackable { get; set; }
+        public Int64 VendorBuyPrice { get; set; }
+        public Int64 VendorSellPrice { get; set; }
+        public Int32 ItemClass { get; set; }
+        public Int32 ItemSubClass { get; set; }
+        public Int32 Quality { get; set; }
+        public Int32 RequiredSkillRank { get; set; }
     }
 }
